@@ -22,7 +22,7 @@ class SamplePlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        AppPlugin appPlugin = project.plugins.getPlugin(AppPlugin)
+        AppPlugin appPlugin = project.plugins.findPlugin(AppPlugin)
         LibraryPlugin libraryPlugin = project.plugins.findPlugin(LibraryPlugin)
 
         boolean isApp = project.plugins.hasPlugin(AppPlugin)
