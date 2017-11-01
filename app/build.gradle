@@ -12,6 +12,9 @@ android {
         versionName "1.0"
     }
     buildTypes {
+        debug {
+
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -19,9 +22,33 @@ android {
     }
 }
 
+sample {
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
+
+    defaultSampleConfig {
+        stringConfig "default string"
+        booleanConfig true
+        fileConfig project.rootProject.file("gradle.properties")
+    }
+    sampleConfig {
+        debug {
+            stringConfig "debug string"
+            booleanConfig true
+            fileConfig project.rootProject.file("gradle.properties")
+        }
+        release {
+            stringConfig "release string"
+            booleanConfig true
+            fileConfig project.rootProject.file("gradle.properties")
+        }
+    }
+}
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    customCompile fileTree(dir: 'libs', include: ['*.jar'])
+    customCompile 'com.android.support:appcompat-v7:26.1.0'
+    customCompile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
 }
+

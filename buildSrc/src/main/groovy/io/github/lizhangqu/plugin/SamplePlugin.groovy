@@ -16,10 +16,17 @@ import com.android.build.gradle.internal.variant.ApplicationVariantData
 import com.android.builder.core.AndroidBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ComponentMetadataDetails
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.repositories.ArtifactRepository
 import org.gradle.api.plugins.PluginContainer
+import org.gradle.internal.reflect.Instantiator
+
+import javax.inject.Inject
 
 
 class SamplePlugin implements Plugin<Project> {
+    protected Instantiator instantiator
 
     static def applyPlugin(Project project, Class<? extends Plugin> pluginClazz) {
         PluginContainer pluginManager = project.getPlugins()
@@ -29,17 +36,24 @@ class SamplePlugin implements Plugin<Project> {
         pluginManager.apply(pluginClazz)
     }
 
+    @Inject
+    SamplePlugin(Instantiator instantiator) {
+        this.instantiator = instantiator
+    }
 
     @Override
     void apply(Project project) {
         //如果没有应用，则应用
-        applyPlugin(project, AppPlugin)
+        applyPlugin(project, AppPlugin.class)
 
-        AppPlugin appPlugin = project.getPlugins().findPlugin(AppPlugin)
-        LibraryPlugin libraryPlugin = project.getPlugins().findPlugin(LibraryPlugin)
+        //create extension
+        project.getExtensions().create("sample", SampleExtension.class, project, instantiator)
 
-        boolean isApp = project.getPlugins().hasPlugin(AppPlugin)
-        boolean isLibrary = project.getPlugins().hasPlugin(LibraryPlugin)
+        AppPlugin appPlugin = project.getPlugins().findPlugin(AppPlugin.class)
+        LibraryPlugin libraryPlugin = project.getPlugins().findPlugin(LibraryPlugin.class)
+
+        boolean isApp = project.getPlugins().hasPlugin(AppPlugin.class)
+        boolean isLibrary = project.getPlugins().hasPlugin(LibraryPlugin.class)
 
         project.println "appPlugin:${appPlugin}"
         project.println "libraryPlugin:${libraryPlugin}"
@@ -47,8 +61,8 @@ class SamplePlugin implements Plugin<Project> {
         project.println "isApp:${isApp}"
         project.println "isLibrary:${isLibrary}"
 
-        AppExtension appExtension = project.getExtensions().findByType(AppExtension)
-        LibraryExtension libraryExtension = project.getExtensions().findByType(LibraryExtension)
+        AppExtension appExtension = project.getExtensions().findByType(AppExtension.class)
+        LibraryExtension libraryExtension = project.getExtensions().findByType(LibraryExtension.class)
 
         project.println "appExtension:${appExtension}"
         project.println "libraryExtension:${libraryExtension}"
@@ -83,5 +97,37 @@ class SamplePlugin implements Plugin<Project> {
                 //ignore
             }
         }
+
+        //get all configurations
+        project.getConfigurations().all { Configuration configuration ->
+            project.logger.error "configuration:${configuration}"
+        }
+        //get a configuration
+        Configuration compileConfiguration = project.getConfigurations().getByName("compile")
+        //create a configuration
+        project.getConfigurations().create("customCompile") { Configuration configuration ->
+            compileConfiguration.extendsFrom(configuration)
+        }
+        //get all repositorys
+        project.getRepositories().all { ArtifactRepository repository ->
+            project.logger.error "repository:${repository.getName()}"
+        }
+        //add a dependency
+        project.getDependencies().add("compile", "com.android.support:multidex:1.0.1")
+        //get all components
+        project.getDependencies().getComponents().all { ComponentMetadataDetails componentMetadataDetails ->
+            project.logger.error "componentMetadataDetails:${componentMetadataDetails.getId()}"
+        }
+        //read extension
+        project.afterEvaluate {
+            SampleExtension sampleExtension = project.getExtensions().findByType(SampleExtension.class)
+            project.logger.error "${sampleExtension.buildToolsVersion}"
+            project.logger.error "${sampleExtension.compileSdkVersion}"
+            project.logger.error "${sampleExtension.defaultSampleConfig}"
+            sampleExtension.sampleConfig.all { SampleConfig sampleConfig ->
+                project.logger.error "${sampleConfig.name}:${sampleConfig}"
+            }
+        }
     }
 }
+
