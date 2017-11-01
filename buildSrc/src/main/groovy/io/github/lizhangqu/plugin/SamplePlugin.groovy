@@ -18,6 +18,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ComponentMetadataDetails
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.repositories.ArtifactRepository
 import org.gradle.api.plugins.PluginContainer
 import org.gradle.internal.reflect.Instantiator
@@ -128,6 +129,14 @@ class SamplePlugin implements Plugin<Project> {
                 project.logger.error "${sampleConfig.name}:${sampleConfig}"
             }
         }
+
+        //get a dependency file
+        Dependency dependency = project.getDependencies().create("com.android.support:multidex:1.0.1")
+        Configuration configuration = project.getConfigurations().detachedConfiguration(dependency)
+        //不进行传递依赖
+        configuration.setTransitive(false)
+        project.logger.error "dependency files:${configuration.getFiles()}"
+
     }
 }
 
