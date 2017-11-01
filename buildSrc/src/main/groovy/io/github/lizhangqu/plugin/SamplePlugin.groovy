@@ -16,17 +16,30 @@ import com.android.build.gradle.internal.variant.ApplicationVariantData
 import com.android.builder.core.AndroidBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.PluginContainer
 
 
 class SamplePlugin implements Plugin<Project> {
 
+    static def applyPlugin(Project project, Class<? extends Plugin> pluginClazz) {
+        PluginContainer pluginManager = project.getPlugins()
+        if (pluginManager.hasPlugin(pluginClazz)) {
+            return
+        }
+        pluginManager.apply(pluginClazz)
+    }
+
+
     @Override
     void apply(Project project) {
-        AppPlugin appPlugin = project.plugins.findPlugin(AppPlugin)
-        LibraryPlugin libraryPlugin = project.plugins.findPlugin(LibraryPlugin)
+        //如果没有应用，则应用
+        applyPlugin(project, AppPlugin)
 
-        boolean isApp = project.plugins.hasPlugin(AppPlugin)
-        boolean isLibrary = project.plugins.hasPlugin(LibraryPlugin)
+        AppPlugin appPlugin = project.getPlugins().findPlugin(AppPlugin)
+        LibraryPlugin libraryPlugin = project.getPlugins().findPlugin(LibraryPlugin)
+
+        boolean isApp = project.getPlugins().hasPlugin(AppPlugin)
+        boolean isLibrary = project.getPlugins().hasPlugin(LibraryPlugin)
 
         project.println "appPlugin:${appPlugin}"
         project.println "libraryPlugin:${libraryPlugin}"
@@ -34,8 +47,8 @@ class SamplePlugin implements Plugin<Project> {
         project.println "isApp:${isApp}"
         project.println "isLibrary:${isLibrary}"
 
-        AppExtension appExtension = project.extensions.findByType(AppExtension)
-        LibraryExtension libraryExtension = project.extensions.findByType(LibraryExtension)
+        AppExtension appExtension = project.getExtensions().findByType(AppExtension)
+        LibraryExtension libraryExtension = project.getExtensions().findByType(LibraryExtension)
 
         project.println "appExtension:${appExtension}"
         project.println "libraryExtension:${libraryExtension}"
@@ -46,7 +59,7 @@ class SamplePlugin implements Plugin<Project> {
             TaskManager taskManager = BasePlugin.getMetaClass().getProperty(appPlugin, "taskManager") as TaskManager
             project.println "taskManager:${taskManager}"
 
-            appExtension.applicationVariants.all { ApplicationVariantImpl variant ->
+            appExtension.getApplicationVariants().all { ApplicationVariantImpl variant ->
 
                 ApplicationVariantData variantData = variant.getMetaClass().getProperty(variant, 'variantData') as ApplicationVariantData
                 VariantScope variantScope = variantData.getScope()
@@ -66,7 +79,7 @@ class SamplePlugin implements Plugin<Project> {
 
             }
         } else {
-            libraryExtension.libraryVariants.all { LibraryVariantImpl variant ->
+            libraryExtension.getLibraryVariants().all { LibraryVariantImpl variant ->
                 //ignore
             }
         }
