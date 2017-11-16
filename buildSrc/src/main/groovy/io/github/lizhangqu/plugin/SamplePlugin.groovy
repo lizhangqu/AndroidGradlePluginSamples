@@ -68,7 +68,7 @@ class SamplePlugin implements Plugin<Project> {
         project.println "appExtension:${appExtension}"
         project.println "libraryExtension:${libraryExtension}"
 
-
+//        appExtension.registerTransform()
 
         if (isApp) {
             TaskManager taskManager = BasePlugin.getMetaClass().getProperty(appPlugin, "taskManager") as TaskManager
