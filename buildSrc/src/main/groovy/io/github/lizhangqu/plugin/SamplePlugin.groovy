@@ -10,23 +10,16 @@ import com.android.build.gradle.internal.SdkHandler
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.api.ApplicationVariantImpl
 import com.android.build.gradle.internal.api.LibraryVariantImpl
-import com.android.build.gradle.internal.core.GradleVariantConfiguration
 import com.android.build.gradle.internal.dsl.CoreBuildType
 import com.android.build.gradle.internal.dsl.CoreProductFlavor
 import com.android.build.gradle.internal.ndk.NdkHandler
-import com.android.build.gradle.internal.scope.AndroidTask
 import com.android.build.gradle.internal.scope.GlobalScope
 import com.android.build.gradle.internal.scope.VariantOutputScope
 import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.variant.ApplicationVariantData
-import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
-import com.android.build.gradle.tasks.ManifestProcessorTask
-import com.android.build.gradle.tasks.MergeManifests
-import com.android.builder.Version
 import com.android.builder.core.AndroidBuilder
 import com.android.builder.core.VariantConfiguration
-import com.android.builder.dependency.level2.AndroidDependency
 import com.android.builder.model.ApiVersion
 import com.android.manifmerger.ManifestMerger2
 import com.android.manifmerger.ManifestProvider
@@ -39,6 +32,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.repositories.ArtifactRepository
 import org.gradle.api.plugins.PluginContainer
+import org.gradle.api.tasks.GradleBuild
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.NameMatcher
 
@@ -271,6 +265,19 @@ class SamplePlugin implements Plugin<Project> {
         //不进行传递依赖
         configuration.setTransitive(false)
         project.logger.error "dependency files:${configuration.getFiles()}"
+
+
+
+        String path = project.path
+        path = !path.endsWith(Project.PATH_SEPARATOR) ? path + Project.PATH_SEPARATOR : path
+        project.task('executeTaskFromTask', description: 'execute some task from a task.', group: "execute", type: GradleBuild) {
+            startParameter = project.getGradle().startParameter.newInstance()
+
+            tasks = [
+                    "${path}clean" as String,
+                    "${path}assemble" as String,
+            ]
+        }
 
     }
 }
